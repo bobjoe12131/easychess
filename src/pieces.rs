@@ -22,9 +22,6 @@ pub enum PieceType {
     Pawn,
     None,
 }
-/// Matches a [`char`] that represents a chess piece to a [`PieceType`] variant.
-/// Returns an error if it is not one of the following :
-/// 'k', 'q', 'r', 'b', 'n', 'p'
 
 #[derive(Clone, Copy)]
 pub enum PieceTeam {
@@ -34,6 +31,8 @@ pub enum PieceTeam {
 }
 
 /// Is placed on [crate::board::Board]
+/// # TODO:
+/// change to Piece(PieceTeam)
 #[derive(Clone, Copy)]
 pub struct Piece {
     pub piece_type: PieceType,
@@ -52,6 +51,17 @@ impl Piece {
     };
 }
 
+/// Matches a [char] that represents a chess piece to a [PieceType] variant.
+/// Valid chars are:
+/// ```
+/// 'k' => PieceType::King,
+/// 'q' => PieceType::Queen,
+/// 'r' => PieceType::Rook,
+/// 'b' => PieceType::Bishop,
+/// 'n' => PieceType::Knight,
+/// 'p' => PieceType::Pawn,
+/// ' ' | '.' => PieceType::None,
+/// ```
 impl TryFrom<char> for Piece {
     type Error = TryFromError;
 
