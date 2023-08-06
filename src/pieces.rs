@@ -1,5 +1,6 @@
 use std::fmt::Debug;
 
+/// Error for when [Piece::try_from] gets an invalid [char].
 pub struct TryFromError(char, u32, &'static str);
 
 impl Debug for TryFromError {
@@ -51,20 +52,23 @@ impl Piece {
     };
 }
 
-/// Matches a [char] that represents a chess piece to a [PieceType] variant.
-/// Valid chars are:
-/// ```
-/// 'k' => PieceType::King,
-/// 'q' => PieceType::Queen,
-/// 'r' => PieceType::Rook,
-/// 'b' => PieceType::Bishop,
-/// 'n' => PieceType::Knight,
-/// 'p' => PieceType::Pawn,
-/// ' ' | '.' => PieceType::None,
-/// ```
 impl TryFrom<char> for Piece {
     type Error = TryFromError;
-
+    /// Matches a [char] that represents a chess piece to a [PieceType] variant.
+    /// Valid chars are:
+    /// ```
+    /// 'k' => PieceType::King,
+    /// 'q' => PieceType::Queen,
+    /// 'r' => PieceType::Rook,
+    /// 'b' => PieceType::Bishop,
+    /// 'n' => PieceType::Knight,
+    /// 'p' => PieceType::Pawn,
+    /// ' ' | '.' => PieceType::None,
+    /// ```
+    /// Invalid chars return:
+    /// ```
+    /// Err(TryFromError(c, line!(), module_path!()))
+    /// ```
     fn try_from(value: char) -> Result<Self, Self::Error> {
         let ptype = match value.to_ascii_lowercase() {
             'k' => PieceType::King,
@@ -87,6 +91,18 @@ impl TryFrom<char> for Piece {
     }
 }
 impl Into<char> for Piece {
+    /// Matches a [PieceType] variant to a [char] that represents a chess piece:
+    /**
+    ```
+    PieceType::King => 'k',
+    PieceType::Queen => 'q',
+    PieceType::Rook => 'r',
+    PieceType::Bishop => 'b',
+    PieceType::Knight => 'n',
+    PieceType::Pawn => 'p',
+    PieceType::None => '.',
+    ```
+    */
     fn into(self) -> char {
         let matched_char = match self.piece_type {
             PieceType::King => 'k',

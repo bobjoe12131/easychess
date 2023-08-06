@@ -1,29 +1,7 @@
 use std::fmt;
 
 use crate::pieces::{self, Piece, PieceTeam, PieceType, TryFromError};
-use termion::color::{self, Bg, Black, Fg, Reset, White};
-
-fn white_square(piece_char: String) -> String {
-    format!(
-        "{}{}{piece_char}{}{}{}",
-        color::Fg(color::Black),
-        color::Bg(color::White),
-        " ",
-        color::Fg(color::Reset),
-        color::Bg(color::Reset),
-    )
-}
-
-fn black_square(piece_char: String) -> String {
-    format!(
-        "{}{}{piece_char}{}{}{}",
-        color::Fg(color::White),
-        color::Bg(color::Black),
-        " ",
-        color::Fg(color::Reset),
-        color::Bg(color::Reset),
-    )
-}
+use termion::color::{self};
 
 pub struct Board {
     board: Vec<Vec<Piece>>,
@@ -55,7 +33,6 @@ impl Board {
         let thegrid: Vec<Vec<Piece>> =
             vec![vec![Piece::NONE; board_width as usize]; board_height as usize]; // row oriented
 
-        //let thegrid = ;
         Board { board: thegrid }
     }
 }
@@ -86,8 +63,22 @@ impl fmt::Display for Board {
                             false => !(m % 2 == 0),
                         };
                         let string = match even_square {
-                            true => white_square(string.to_string()),
-                            false => black_square(string.to_string()),
+                            true => format!(
+                                "{}{}{string}{}{}{}",
+                                color::Fg(color::Black),
+                                color::Bg(color::White),
+                                " ",
+                                color::Fg(color::Reset),
+                                color::Bg(color::Reset),
+                            ),
+                            false => format!(
+                                "{}{}{string}{}{}{}",
+                                color::Fg(color::White),
+                                color::Bg(color::Black),
+                                " ",
+                                color::Fg(color::Reset),
+                                color::Bg(color::Reset),
+                            ),
                         };
                         let string = match m + 1 == v.len() {
                             true => string + "\n",
