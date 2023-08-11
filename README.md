@@ -1,7 +1,7 @@
 # easychess-lib
 
 easychess is a library to easily create a chess game.
-Work In Progress, right now it can only parse a string into a [board::Board] and display it with ANSI colors.
+Work In Progress.
 
 This is my first rust project so please send pull requests and issues!
 
