@@ -1,19 +1,21 @@
 use std::fmt;
 
-use crate::pieces::{self, Piece, PieceTeam, PieceType, TryFromError};
-use termion::color::{self};
+use crate::pieces::{Piece, TryFromError};
+//use termion::color::{self};
 
+/// Row oriented.
+/// Visually look like this:
+/// - {
+/// - {-----}
+/// - {-----}
+/// - {-----}
+/// - }
+/// Board coordinates go right and down.
 pub struct Board {
     board: Vec<Vec<Piece>>,
 }
 impl Board {
-    /// Returns an empty [Board]. Every element is:
-    /// ```no_run
-    /// Piece {
-    ///     piece_type: PieceType::None,
-    ///     piece_team: PieceTeam::None,    
-    /// }
-    /// ```
+    /// Returns an empty [Board]. Every element is [Piece::NONE]
     ///
     /// # Arguments
     ///
@@ -35,6 +37,12 @@ impl Board {
 
         Board { board: thegrid }
     }
+
+    pub fn put_piece(self, piece: Piece, x_pos: usize, y_pos: usize) -> Self {
+        let mut new_board = self;
+        new_board.board[y_pos][x_pos] = piece;
+        new_board
+    }
 }
 impl fmt::Display for Board {
     /// Allow [Board] to be displayed to stdout with macros such as [`println!()`].
@@ -51,17 +59,20 @@ impl fmt::Display for Board {
         let board = self.board.clone();
         let board = board
             .iter()
-            .enumerate()
-            .map(|(n, v)| {
+            .map(|v| {
+                //.enumerate()
+                //.map(|(n, v)| {
                 v.iter()
                     .enumerate()
                     .map(|(m, e)| {
-                        let string: char = e.clone().into();
+                        let piece_char: char = e.clone().into();
+                        /*
                         let even_row = n % 2 == 0;
                         let even_square = match even_row {
                             true => m % 2 == 0,
                             false => !(m % 2 == 0),
                         };
+
                         let string = match even_square {
                             true => format!(
                                 "{}{}{string}{}{}{}",
@@ -80,9 +91,10 @@ impl fmt::Display for Board {
                                 color::Bg(color::Reset),
                             ),
                         };
+                        */
                         let string = match m + 1 == v.len() {
-                            true => string + "\n",
-                            false => string,
+                            true => format!("{piece_char}\n"),
+                            false => piece_char.to_string(),
                         };
                         string
                     })

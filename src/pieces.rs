@@ -21,100 +21,107 @@ pub enum PieceType {
     Bishop,
     Knight,
     Pawn,
-    None,
 }
 
 #[derive(Clone, Copy)]
 pub enum PieceTeam {
-    White,
-    Black,
+    White(PieceType),
+    Black(PieceType),
     None,
 }
 
 /// Is placed on [crate::board::Board]
-/// # TODO:
-/// change to Piece(PieceTeam)
 #[derive(Clone, Copy)]
-pub struct Piece {
-    pub piece_type: PieceType,
-    pub piece_team: PieceTeam,
-}
+pub struct Piece(PieceTeam);
 impl Piece {
-    /// Piece struct with None for both fields.
-    ///
-    /// ## Fields
-    /// piece_type: [PieceType::None]
-    ///
-    /// piece_team: [PieceTeam::None]
-    pub const NONE: Self = Self {
-        piece_type: PieceType::None,
-        piece_team: PieceTeam::None,
-    };
+    /// Piece struct with [PieceTeam::None]
+    pub const NONE: Self = Self(PieceTeam::None);
 }
 
 impl TryFrom<char> for Piece {
     type Error = TryFromError;
-    /// Matches a [char] that represents a chess piece to a [PieceType] variant.
+    /// Matches a [char] that represents a chess piece to a [Piece].
     /// Valid chars are:
-    /// ```
+    /// ```no_run
+    /// '.' => return PieceTeam::None
     /// 'k' => PieceType::King,
     /// 'q' => PieceType::Queen,
     /// 'r' => PieceType::Rook,
     /// 'b' => PieceType::Bishop,
     /// 'n' => PieceType::Knight,
     /// 'p' => PieceType::Pawn,
-    /// ' ' | '.' => PieceType::None,
     /// ```
+    /// Matches uppercase and lowercase to [PieceTeam]:
+    /// ```no_run
+    /// true => PieceTeam::White(ptype),
+    /// false => PieceTeam::Black(ptype),
+    /// ```
+    ///
+    /// # Errors
     /// Invalid chars return:
     /// ```
     /// Err(TryFromError(c, line!(), module_path!()))
     /// ```
     fn try_from(value: char) -> Result<Self, Self::Error> {
         let ptype = match value.to_ascii_lowercase() {
+            '.' => return Ok(Self(PieceTeam::None)),
             'k' => PieceType::King,
             'q' => PieceType::Queen,
             'r' => PieceType::Rook,
             'b' => PieceType::Bishop,
             'n' => PieceType::Knight,
             'p' => PieceType::Pawn,
-            ' ' | '.' => PieceType::None,
+            //' ' | '.' => PieceType::None,
             c => return Err(TryFromError(c, line!(), module_path!())),
         };
         let pteam = match value.is_ascii_uppercase() {
-            true => PieceTeam::White,
-            false => PieceTeam::Black,
+            true => PieceTeam::White(ptype),
+            false => PieceTeam::Black(ptype),
         };
-        Ok(Self {
-            piece_type: ptype,
-            piece_team: pteam,
-        })
+        Ok(Self(pteam))
     }
 }
 impl Into<char> for Piece {
     /// Matches a [PieceType] variant to a [char] that represents a chess piece:
     /**
     ```
+    PieceType::None => return '.',
     PieceType::King => 'k',
     PieceType::Queen => 'q',
     PieceType::Rook => 'r',
     PieceType::Bishop => 'b',
     PieceType::Knight => 'n',
     PieceType::Pawn => 'p',
-    PieceType::None => '.',
     ```
     */
+    ///
     fn into(self) -> char {
-        let matched_char = match self.piece_type {
-            PieceType::King => 'k',
-            PieceType::Queen => 'q',
-            PieceType::Rook => 'r',
-            PieceType::Bishop => 'b',
-            PieceType::Knight => 'n',
-            PieceType::Pawn => 'p',
-            PieceType::None => '.',
+        // let matched_char = match self.piece_type {
+        // PieceType::King => 'k',
+        // PieceType::Queen => 'q',
+        // PieceType::Rook => 'r',
+        // PieceType::Bishop => 'b',
+        // PieceType::Knight => 'n',
+        // PieceType::Pawn => 'p',
+        // PieceType::None => '.',
+        // };
+        // match self.piece_team {
+        //     PieceTeam::White => matched_char.to_ascii_uppercase(),
+        //     _ => matched_char,
+        // }
+        let matched_char = match self.0 {
+            PieceTeam::None => return '.',
+            PieceTeam::White(ptype) | PieceTeam::Black(ptype) => match ptype {
+                PieceType::King => 'k',
+                PieceType::Queen => 'q',
+                PieceType::Rook => 'r',
+                PieceType::Bishop => 'b',
+                PieceType::Knight => 'n',
+                PieceType::Pawn => 'p',
+            },
         };
-        match self.piece_team {
-            PieceTeam::White => matched_char.to_ascii_uppercase(),
+        match self.0 {
+            PieceTeam::White(_) => matched_char.to_ascii_uppercase(),
             _ => matched_char,
         }
     }

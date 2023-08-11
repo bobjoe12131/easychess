@@ -8,10 +8,16 @@
 //! - [x] Write [pieces::Piece]
 //! ## 0.2.0
 //! - [x] Complete 0.1.0 documentation
-//! - [ ] Change [pieces::Piece] structure to make [pieces::PieceType::None] uneeded
-//! - [ ] Write [board::Board.to_string]
-//! - [ ] Write [board::Board.put]
+//! - [x] Change [pieces::Piece] structure to make pieces::PieceType::None uneeded
+//! - [-] ~~Write [board::Board.to_string]~~
+//! - [x] Change [board::Board] Display to be less fancy
+//! - [x] Write [board::Board.put_piece()]
 //! ## 0.3.0
+//! - [ ] Write [board::Board.move_piece()]
+//! - [ ] Write [board::Board.mut_put_piece()]
+//! - [ ] Write [board::Board.mut_move_piece()]
+//! - [ ] Make some examples in /examples
+//! - [ ] Write game::Game
 
 //#![cfg_attr(debug_assertions, allow(dead_code, unused_imports))]
 
