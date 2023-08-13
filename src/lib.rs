@@ -9,7 +9,7 @@
 //! ## 0.2.0
 //! - [x] Complete 0.1.0 documentation
 //! - [x] Change [pieces::Piece] structure to make pieces::PieceType::None uneeded
-//! - [-] ~~Write [board::Board.to_string]~~
+//! - [x] ~~Write [board::Board.to_string]~~
 //! - [x] Change [board::Board] Display to be less fancy
 //! - [x] Write [board::Board.put_piece()]
 //! ## 0.3.0
