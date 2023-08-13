@@ -28,8 +28,6 @@ impl Board {
     ///
     /// let empty_board = Board::new(8,8);
     /// ```
-    /// # TODO:
-    /// Be able to place and move pieces after [Board] is made.
     pub fn new(board_width: i32, board_height: i32) -> Self {
         let thegrid: Vec<Vec<Piece>> =
             vec![vec![Piece::NONE; board_width as usize]; board_height as usize]; // row oriented
