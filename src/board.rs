@@ -1,7 +1,6 @@
 use std::fmt;
 
 use crate::pieces::{Piece, TryFromError};
-//use termion::color::{self};
 
 /// Row oriented.
 /// Visually look like this:
