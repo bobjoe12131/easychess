@@ -1,6 +1,27 @@
+#![warn(missing_docs)]
+#![warn(rustdoc::missing_doc_code_examples)]
+
 use std::fmt;
 
 use crate::pieces::{Piece, TryFromError};
+
+/// Error for when a [Piece] is put or moved outside of the [Board] size.
+///
+/// # Fields
+/// * piece_pos: (usize, usize) - (x,y) Where the [Piece] tried to be placed.
+/// * board_size: (usize, usize) - (w,h) The size of the [Board].
+struct OutOfBoundsError {
+    piece_pos: (usize, usize),
+    board_size: (usize, usize),
+}
+impl OutOfBoundsError {
+    fn new(piece_pos: (usize, usize), board_size: (usize, usize)) -> Self {
+        OutOfBoundsError {
+            piece_pos,
+            board_size,
+        }
+    }
+}
 
 /// Row oriented.
 /// Visually look like this:
@@ -9,9 +30,13 @@ use crate::pieces::{Piece, TryFromError};
 /// - {-----}
 /// - {-----}
 /// - }
+///
 /// Board coordinates go right and down.
+#[derive(Clone)]
 pub struct Board {
     board: Vec<Vec<Piece>>,
+    width: usize,
+    height: usize,
 }
 impl Board {
     /// Returns an empty [Board]. Every element is [Piece::NONE]
@@ -28,22 +53,91 @@ impl Board {
     ///
     /// let empty_board = Board::new(8,8);
     /// ```
-    pub fn new(board_width: i32, board_height: i32) -> Self {
-        let thegrid: Vec<Vec<Piece>> =
-            vec![vec![Piece::NONE; board_width as usize]; board_height as usize]; // row oriented
+    pub fn new(width: usize, height: usize) -> Self {
+        let thegrid: Vec<Vec<Piece>> = vec![vec![Piece::NONE; width]; height]; // row oriented
 
-        Board { board: thegrid }
+        Board {
+            board: thegrid,
+            width,
+            height,
+        }
     }
 
-    pub fn put_piece(self, piece: Piece, x_pos: usize, y_pos: usize) -> Self {
+    pub fn get(self, x_pos: usize, y_pos: usize) -> Option<&'static Piece> {
+        self.board.get(y_pos).unwrap().get(x_pos)
+    }
+
+    pub fn get_mut(&mut self, x_pos: usize, y_pos: usize) -> Option<&mut Piece> {
+        self.board.get_mut(y_pos)?.get_mut(x_pos)
+    }
+
+    /// Returns [self] with a [Piece] at board[y_pos][x_pos]
+    ///
+    /// # Arguments
+    ///
+    /// * board_width: [i32] - Board width.
+    /// * board_height: [i32] - Board height.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use easychess::board::Board;
+    ///
+    /// let empty_board = Board::new(8,8);
+    /// ```
+    pub fn put_piece(
+        self,
+        piece: Piece,
+        x_pos: usize,
+        y_pos: usize,
+    ) -> Result<Self, OutOfBoundsError> {
         let mut new_board = self;
-        new_board.board[y_pos][x_pos] = piece;
-        new_board
+
+        match new_board.get_mut(x_pos, y_pos) {
+            Some(mut square) => {
+                square = &mut piece.clone();
+                Ok(new_board)
+            }
+            None => Err(OutOfBoundsError::new(
+                (x_pos, y_pos),
+                (self.width, self.height),
+            )),
+        }
+    }
+
+    pub fn move_piece(
+        self,
+        old_x_pos: usize,
+        old_y_pos: usize,
+        new_x_pos: usize,
+        new_y_pos: usize,
+    ) -> Result<Self, OutOfBoundsError> {
+        let mut new_board = self;
+
+        match new_board.get_mut(new_x_pos, new_y_pos) {
+            Some(mut square) => {
+                let mut old_square = match new_board.get_mut(old_x_pos, old_y_pos) {
+                    Some(my_square) => my_square,
+                    None => {
+                        return Err(OutOfBoundsError::new(
+                            (old_x_pos, old_y_pos),
+                            (self.width, self.height),
+                        ))
+                    }
+                };
+                square = &mut old_square.clone();
+                old_square = &mut Piece::NONE;
+                Ok(new_board)
+            }
+            None => Err(OutOfBoundsError::new(
+                (new_x_pos, new_y_pos),
+                (self.width, self.height),
+            )),
+        }
     }
 }
 impl fmt::Display for Board {
     /// Allow [Board] to be displayed to stdout with macros such as [`println!()`].
-    /// Uses ANSI colors.
     ///
     /// # Examples
     ///
@@ -142,6 +236,10 @@ impl TryFrom<&str> for Board {
                     .collect::<Result<Vec<Piece>, Self::Error>>()
             })
             .collect::<Result<Vec<Vec<Piece>>, Self::Error>>();
-        Ok(Self { board: parseboard? })
+        Ok(Self {
+            board: parseboard?,
+            width: parseboard?[0].len(),
+            height: parseboard?.len(),
+        })
     }
 }

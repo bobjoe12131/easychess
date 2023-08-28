@@ -13,11 +13,17 @@
 //! - [x] Change [board::Board] Display to be less fancy
 //! - [x] Write [board::Board.put_piece()]
 //! ## 0.3.0
-//! - [ ] Write [board::Board.move_piece()]
-//! - [ ] Write [board::Board.mut_put_piece()]
-//! - [ ] Write [board::Board.mut_move_piece()]
+//! - [x] Write [board::Board.get()]
+//! - [x] Write [board::Board.get_mut()]
+//! - [x] Write [board::Board.move_piece()]
+//! - [ ] Write [board::Board.put_piece_mut()]
+//! - [ ] Write [board::Board.move_piece_mut()]
+//! - [ ] Write errors for the four features above
+//! - [ ] Impl [Error] for errors
+//! ### 0.4.0
 //! - [ ] Make some examples in /examples
 //! - [ ] Write game::Game
+//! - [ ] Fix doc warnings
 
 //#![cfg_attr(debug_assertions, allow(dead_code, unused_imports))]
 

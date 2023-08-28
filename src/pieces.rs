@@ -1,9 +1,30 @@
-use std::fmt::Debug;
+#![warn(missing_docs)]
+#![warn(rustdoc::missing_doc_code_examples)]
+
+use std::{
+    error::Error,
+    fmt::{Debug, Display},
+};
 
 /// Error for when [Piece::try_from] gets an invalid [char].
+#[derive(Debug)]
 pub struct TryFromError(char, u32, &'static str);
 
-impl Debug for TryFromError {
+impl Error for TryFromError {
+    fn source(&self) -> Option<&(dyn Error + 'static)> {
+        None
+    }
+
+    fn description(&self) -> &str {
+        "description() is deprecated; use Display"
+    }
+
+    fn cause(&self) -> Option<&dyn Error> {
+        self.source()
+    }
+}
+
+impl Display for TryFromError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(
             f,
@@ -32,7 +53,7 @@ pub enum PieceTeam {
 
 /// Is placed on [crate::board::Board]
 #[derive(Clone, Copy)]
-pub struct Piece(PieceTeam);
+pub struct Piece(pub PieceTeam);
 impl Piece {
     /// Piece struct with [PieceTeam::None]
     pub const NONE: Self = Self(PieceTeam::None);
