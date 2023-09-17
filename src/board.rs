@@ -1,7 +1,10 @@
 #![warn(missing_docs)]
 #![warn(rustdoc::missing_doc_code_examples)]
 
-use std::fmt;
+use std::{
+    error::Error,
+    fmt::{self, Display},
+};
 
 use crate::pieces::{Piece, TryFromError};
 
@@ -10,16 +13,41 @@ use crate::pieces::{Piece, TryFromError};
 /// # Fields
 /// * piece_pos: (usize, usize) - (x,y) Where the [Piece] tried to be placed.
 /// * board_size: (usize, usize) - (w,h) The size of the [Board].
-struct OutOfBoundsError {
+#[derive(Debug)]
+pub struct OutOfBoundsError {
     piece_pos: (usize, usize),
     board_size: (usize, usize),
 }
 impl OutOfBoundsError {
-    fn new(piece_pos: (usize, usize), board_size: (usize, usize)) -> Self {
+    pub fn new(piece_pos: (usize, usize), board_size: (usize, usize)) -> Self {
         OutOfBoundsError {
             piece_pos,
             board_size,
         }
+    }
+}
+type OBE = OutOfBoundsError;
+impl Error for OutOfBoundsError {
+    fn source(&self) -> Option<&(dyn Error + 'static)> {
+        None
+    }
+
+    fn description(&self) -> &str {
+        "description() is deprecated; use Display"
+    }
+
+    fn cause(&self) -> Option<&dyn Error> {
+        self.source()
+    }
+}
+
+impl Display for OutOfBoundsError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(
+            f,
+            "Piece is out of bounds: A Piece tried to be at ({},{}) on a Board, but the Board's size is only ({},{}).",
+            self.piece_pos.0, self.piece_pos.1, self.board_size.0, self.board_size.0,
+        )
     }
 }
 
@@ -43,8 +71,8 @@ impl Board {
     ///
     /// # Arguments
     ///
-    /// * board_width: [i32] - Board width.
-    /// * board_height: [i32] - Board height.
+    /// * board_width: [usize] - Board width.
+    /// * board_height: [usize] - Board height.
     ///
     /// # Examples
     ///
@@ -63,15 +91,59 @@ impl Board {
         }
     }
 
-    pub fn get(self, x_pos: usize, y_pos: usize) -> Option<&'static Piece> {
-        self.board.get(y_pos).unwrap().get(x_pos)
+    pub fn get(&self, x_pos: usize, y_pos: usize) -> Option<Piece> {
+        Some(self.board.get(y_pos)?.get(x_pos)?.clone())
     }
-
     pub fn get_mut(&mut self, x_pos: usize, y_pos: usize) -> Option<&mut Piece> {
         self.board.get_mut(y_pos)?.get_mut(x_pos)
     }
 
     /// Returns [self] with a [Piece] at board[y_pos][x_pos]
+    ///
+    /// # Arguments
+    ///
+    /// * piece: [Piece] -
+    /// * board_height: [i32] - Board height.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use easychess::board::Board;
+    ///
+    /// let empty_board = Board::new(8,8);
+    /// ```
+    pub fn put_piece(
+        &mut self,
+        piece: Piece,
+        pos: (usize, usize),
+    ) -> Result<&mut Self, OutOfBoundsError> {
+        //let mut new_board = self;
+
+        // match self.get_mut(x_pos, y_pos) {
+        //     Some(mut square) => {
+        //         square = &mut piece.clone();
+        //         Ok(self)
+        //     }
+        //     None => Err(OutOfBoundsError::new(
+        //         (x_pos, y_pos),
+        //         (self.width, self.height),
+        //     )),
+        // }
+
+        let width: usize = self.width;
+        let height: usize = self.height;
+
+        let mut square = self
+            .get_mut(pos.0, pos.1)
+            .ok_or(OutOfBoundsError::new((pos.0, pos.1), (width, height)))?;
+        square = &mut piece.clone();
+        Ok(self)
+    }
+
+    /// Moves the piece at the old position to the new position.
+    ///
+    /// The [Piece] at the new position set to the old position [Piece].
+    /// The [Piece] at the old position set to [Piece(None)]
     ///
     /// # Arguments
     ///
@@ -85,55 +157,58 @@ impl Board {
     ///
     /// let empty_board = Board::new(8,8);
     /// ```
-    pub fn put_piece(
-        self,
-        piece: Piece,
-        x_pos: usize,
-        y_pos: usize,
-    ) -> Result<Self, OutOfBoundsError> {
-        let mut new_board = self;
-
-        match new_board.get_mut(x_pos, y_pos) {
-            Some(mut square) => {
-                square = &mut piece.clone();
-                Ok(new_board)
-            }
-            None => Err(OutOfBoundsError::new(
-                (x_pos, y_pos),
-                (self.width, self.height),
-            )),
-        }
-    }
-
+    /// # Errors
+    ///
+    /// If the old or new position is out of board bounds, it will return the following.
+    /// The old position will be returned in the error first.
+    /** ```no_run
+    Err(OutOfBoundsError::new(
+        (*_x_pos, *_y_pos),
+        (self.width, self.height),
+    ))
+    ``` */
     pub fn move_piece(
-        self,
-        old_x_pos: usize,
-        old_y_pos: usize,
-        new_x_pos: usize,
-        new_y_pos: usize,
-    ) -> Result<Self, OutOfBoundsError> {
-        let mut new_board = self;
+        &mut self,
+        old_pos: (usize, usize),
+        new_pos: (usize, usize),
+    ) -> Result<&mut Self, OutOfBoundsError> {
+        // if let Some(mut old_square) = self.get_mut(old_pos.0, old_pos.1) {
+        //     if let Some(mut new_square) = self.get_mut(new_pos.0, new_pos.1) {
+        //         new_square = old_square;
+        //         old_square = &mut Piece::NONE;
+        //         Ok(self)
+        //     } else {
+        //         Err(OutOfBoundsError::new(
+        //             (new_pos.0, new_pos.1),
+        //             (self.width, self.height),
+        //         ))
+        //     }
+        // } else {
+        //     Err(OutOfBoundsError::new(
+        //         (old_pos.0, old_pos.1),
+        //         (self.width, self.height),
+        //     ))
+        // }
 
-        match new_board.get_mut(new_x_pos, new_y_pos) {
-            Some(mut square) => {
-                let mut old_square = match new_board.get_mut(old_x_pos, old_y_pos) {
-                    Some(my_square) => my_square,
-                    None => {
-                        return Err(OutOfBoundsError::new(
-                            (old_x_pos, old_y_pos),
-                            (self.width, self.height),
-                        ))
-                    }
-                };
-                square = &mut old_square.clone();
-                old_square = &mut Piece::NONE;
-                Ok(new_board)
-            }
-            None => Err(OutOfBoundsError::new(
-                (new_x_pos, new_y_pos),
-                (self.width, self.height),
-            )),
-        }
+        let width: usize = self.width;
+        let height: usize = self.height;
+
+        // Get the piece at the old position.
+        // Clone it because there can not be two mutable references.
+        let mut old_square: Piece = self.get(old_pos.0, old_pos.1).ok_or(OutOfBoundsError::new(
+            (old_pos.0, old_pos.1),
+            (width, height),
+        ))?;
+
+        let mut new_square = self
+            .get_mut(old_pos.0, old_pos.1)
+            .ok_or(OutOfBoundsError::new(
+                (old_pos.0, old_pos.1),
+                (width, height),
+            ))?;
+
+        new_square = &mut old_square;
+        Ok(self)
     }
 }
 impl fmt::Display for Board {
@@ -228,18 +303,18 @@ impl TryFrom<&str> for Board {
     /// RNBQKBNR";
     /// ```
     fn try_from(value: &str) -> Result<Self, Self::Error> {
-        let parseboard: Result<Vec<Vec<Piece>>, TryFromError> = value
+        let parseboard: Vec<Vec<Piece>> = value
             .lines()
             .map(|line| {
                 line.chars()
                     .map(|character| Ok(Piece::try_from(character)?))
                     .collect::<Result<Vec<Piece>, Self::Error>>()
             })
-            .collect::<Result<Vec<Vec<Piece>>, Self::Error>>();
+            .collect::<Result<Vec<Vec<Piece>>, Self::Error>>()?;
         Ok(Self {
-            board: parseboard?,
-            width: parseboard?[0].len(),
-            height: parseboard?.len(),
+            board: parseboard.clone(),
+            width: parseboard[0].len().clone(),
+            height: parseboard.len().clone(),
         })
     }
 }

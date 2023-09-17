@@ -8,7 +8,7 @@ use std::{
 
 /// Error for when [Piece::try_from] gets an invalid [char].
 #[derive(Debug)]
-pub struct TryFromError(char, u32, &'static str);
+pub struct TryFromError(char);
 
 impl Error for TryFromError {
     fn source(&self) -> Option<&(dyn Error + 'static)> {
@@ -28,8 +28,8 @@ impl Display for TryFromError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(
             f,
-            "invalid char '{}' at line {} in file {}",
-            self.0, self.1, self.2
+            "Invalid char to Piece match: A char, '{}', tried to be matched to a Piece, but there is no pattern.",
+            self.0
         )
     }
 }
@@ -79,8 +79,9 @@ impl TryFrom<char> for Piece {
     /// ```
     ///
     /// # Errors
+    ///
     /// Invalid chars return:
-    /// ```
+    /// ```no_run
     /// Err(TryFromError(c, line!(), module_path!()))
     /// ```
     fn try_from(value: char) -> Result<Self, Self::Error> {
@@ -93,7 +94,7 @@ impl TryFrom<char> for Piece {
             'n' => PieceType::Knight,
             'p' => PieceType::Pawn,
             //' ' | '.' => PieceType::None,
-            c => return Err(TryFromError(c, line!(), module_path!())),
+            c => return Err(TryFromError(c)),
         };
         let pteam = match value.is_ascii_uppercase() {
             true => PieceTeam::White(ptype),
