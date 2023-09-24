@@ -6,7 +6,8 @@ use std::{
     fmt::{self, Display},
 };
 
-use crate::pieces::{Piece, TryFromError};
+use crate::chess::ChessPiece;
+use crate::piece::{Piece, PieceTryFromError};
 
 /// Error for when a [Piece] is put or moved outside of the [Board] size.
 ///
@@ -61,12 +62,12 @@ impl Display for OutOfBoundsError {
 ///
 /// Board coordinates go right and down.
 #[derive(Clone)]
-pub struct Board {
-    board: Vec<Vec<Piece>>,
+pub struct Board<MyPiece: Piece<MyPiece>> {
+    board: Vec<Vec<MyPiece>>,
     width: usize,
     height: usize,
 }
-impl Board {
+impl<MyPiece: Piece<MyPiece>> Board<MyPiece> {
     /// Returns an empty [Board]. Every element is [Piece::NONE]
     ///
     /// # Arguments
@@ -82,7 +83,7 @@ impl Board {
     /// let empty_board = Board::new(8,8);
     /// ```
     pub fn new(width: usize, height: usize) -> Self {
-        let thegrid: Vec<Vec<Piece>> = vec![vec![Piece::NONE; width]; height]; // row oriented
+        let thegrid: Vec<Vec<MyPiece>> = vec![vec![MyPiece::NONE; width]; height]; // row oriented
 
         Board {
             board: thegrid,
@@ -91,10 +92,10 @@ impl Board {
         }
     }
 
-    pub fn get(&self, x_pos: usize, y_pos: usize) -> Option<Piece> {
+    pub fn get(&self, x_pos: usize, y_pos: usize) -> Option<MyPiece> {
         Some(self.board.get(y_pos)?.get(x_pos)?.clone())
     }
-    pub fn get_mut(&mut self, x_pos: usize, y_pos: usize) -> Option<&mut Piece> {
+    pub fn get_mut(&mut self, x_pos: usize, y_pos: usize) -> Option<&mut MyPiece> {
         self.board.get_mut(y_pos)?.get_mut(x_pos)
     }
 
@@ -114,7 +115,7 @@ impl Board {
     /// ```
     pub fn put_piece(
         &mut self,
-        piece: Piece,
+        piece: MyPiece,
         pos: (usize, usize),
     ) -> Result<&mut Self, OutOfBoundsError> {
         //let mut new_board = self;
@@ -195,7 +196,7 @@ impl Board {
 
         // Get the piece at the old position.
         // Clone it because there can not be two mutable references.
-        let mut old_square: Piece = self.get(old_pos.0, old_pos.1).ok_or(OutOfBoundsError::new(
+        let mut old_square = self.get(old_pos.0, old_pos.1).ok_or(OutOfBoundsError::new(
             (old_pos.0, old_pos.1),
             (width, height),
         ))?;
@@ -211,7 +212,7 @@ impl Board {
         Ok(self)
     }
 }
-impl fmt::Display for Board {
+impl<MyPiece: Piece<MyPiece>> fmt::Display for Board<MyPiece> {
     /// Allow [Board] to be displayed to stdout with macros such as [`println!()`].
     ///
     /// # Examples
@@ -272,8 +273,8 @@ impl fmt::Display for Board {
         write!(f, "{board}")
     }
 }
-impl TryFrom<&str> for Board {
-    type Error = TryFromError;
+impl<MyPiece: Piece<MyPiece> + TryFrom<char>> TryFrom<&str> for Board<MyPiece> {
+    type Error = PieceTryFromError;
     /// Parses a [String] into a [Board].
     /// Matches each [char] in [str] with [Piece::try_from].
     /// ```no_run
@@ -303,14 +304,14 @@ impl TryFrom<&str> for Board {
     /// RNBQKBNR";
     /// ```
     fn try_from(value: &str) -> Result<Self, Self::Error> {
-        let parseboard: Vec<Vec<Piece>> = value
+        let parseboard: Vec<Vec<MyPiece>> = value
             .lines()
             .map(|line| {
                 line.chars()
-                    .map(|character| Ok(Piece::try_from(character)?))
-                    .collect::<Result<Vec<Piece>, Self::Error>>()
+                    .map(|character| character.try_into())
+                    .collect::<Result<Vec<MyPiece>, Self::Error>>()
             })
-            .collect::<Result<Vec<Vec<Piece>>, Self::Error>>()?;
+            .collect::<Result<Vec<Vec<MyPiece>>, Self::Error>>()?;
         Ok(Self {
             board: parseboard.clone(),
             width: parseboard[0].len().clone(),

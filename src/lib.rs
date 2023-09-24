@@ -29,7 +29,8 @@
 //#![cfg_attr(debug_assertions, allow(dead_code, unused_imports))]
 
 pub mod board;
-pub mod pieces;
+pub mod chess;
+pub mod piece;
 
 #[cfg(test)]
 mod tests {
