@@ -1,6 +1,8 @@
 use std::{char, error::Error, fmt::Display};
 
-pub trait Piece<MyPiece>: TryFrom<char> + Into<char> + Clone + Copy {
+pub trait Piece<MyPiece>:
+    TryFrom<char, Error = PieceTryFromError> + Into<char> + Clone + Copy
+{
     const NONE: MyPiece;
     // fn get(self) -> MyPiece;
     // fn get_mut(&mut self) -> &mut MyPiece;

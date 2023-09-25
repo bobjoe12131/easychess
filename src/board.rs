@@ -6,7 +6,7 @@ use std::{
     fmt::{self, Display},
 };
 
-use crate::chess::ChessPiece;
+// use crate::chess::ChessPiece;
 use crate::piece::{Piece, PieceTryFromError};
 
 /// Error for when a [Piece] is put or moved outside of the [Board] size.
@@ -273,7 +273,7 @@ impl<MyPiece: Piece<MyPiece>> fmt::Display for Board<MyPiece> {
         write!(f, "{board}")
     }
 }
-impl<MyPiece: Piece<MyPiece> + TryFrom<char>> TryFrom<&str> for Board<MyPiece> {
+impl<MyPiece: Piece<MyPiece>> TryFrom<&str> for Board<MyPiece> {
     type Error = PieceTryFromError;
     /// Parses a [String] into a [Board].
     /// Matches each [char] in [str] with [Piece::try_from].

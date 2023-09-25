@@ -45,6 +45,6 @@ pppppppp
 ........
 PPPPPPPP
 RNBQKBNR";
-        board::Board::try_from(chesboardstr).unwrap();
+        board::Board::<chess::ChessPiece>::try_from(chesboardstr).unwrap();
     }
 }
