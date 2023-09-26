@@ -63,9 +63,9 @@ impl Display for OutOfBoundsError {
 /// Board coordinates go right and down.
 #[derive(Clone)]
 pub struct Board<MyPiece: Piece<MyPiece>> {
-    board: Vec<Vec<MyPiece>>,
-    width: usize,
-    height: usize,
+    pub board: Vec<Vec<MyPiece>>,
+    pub width: usize,
+    pub height: usize,
 }
 impl<MyPiece: Piece<MyPiece>> Board<MyPiece> {
     /// Returns an empty [Board]. Every element is [Piece::NONE]

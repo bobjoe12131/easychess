@@ -1,3 +1,6 @@
+#![warn(missing_docs)]
+#![warn(rustdoc::missing_doc_code_examples)]
+
 use std::{char, error::Error, fmt::Display};
 
 pub trait Piece<MyPiece>:

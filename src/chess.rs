@@ -1,11 +1,13 @@
 #![warn(missing_docs)]
 #![warn(rustdoc::missing_doc_code_examples)]
 
-use std::{
-    error::Error,
-    fmt::{Debug, Display},
-};
+//use std::{
+//    error::Error,
+//    fmt::{Debug, Display},
+//};
 
+use crate::board::Board;
+use crate::board_default::BoardDefaults;
 use crate::piece::{Piece, PieceTryFromError};
 
 #[derive(Debug, Clone, Copy)]
@@ -28,18 +30,6 @@ pub enum ChessPieceTeam {
 pub struct ChessPiece(ChessPieceTeam);
 
 impl Piece<ChessPiece> for ChessPiece {
-    // fn get(self) -> ChessPiece {
-    //     todo!()
-    // }
-
-    // fn get_mut(&mut self) -> &mut ChessPiece {
-    //     todo!()
-    // }
-
-    // fn is_none(&self) -> bool {
-    //     todo!()
-    // }
-
     const NONE: ChessPiece = ChessPiece(ChessPieceTeam::None);
 }
 
@@ -82,6 +72,18 @@ impl Into<char> for ChessPiece {
         match self.0 {
             ChessPieceTeam::White(_) => matched_char.to_ascii_uppercase(),
             _ => matched_char,
+        }
+    }
+}
+
+impl BoardDefaults<ChessPiece> for ChessPiece {
+    fn empty_board(width: usize, height: usize) -> Board<ChessPiece> {
+        let thegrid: Vec<Vec<ChessPiece>> = vec![vec![ChessPiece::NONE; width]; height]; // row oriented
+
+        Board {
+            board: thegrid,
+            width,
+            height,
         }
     }
 }
