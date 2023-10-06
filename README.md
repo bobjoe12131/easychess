@@ -21,7 +21,9 @@ This is my first rust project so please send pull requests and issues!
 - [x] Write [board::Board.move_piece()]
 - [x] Write errors for the four features above
 - [X] Impl [Error] for errors
-- [ ] Write Piece as a trait
+- [X] Write [piece::Piece] as a trait
+- [X] Create [chess::ChessPiece]
+- [X] Create [board_default::BoardDefaults]
 #### 0.4.0
 - [ ] Make some examples in /examples
 - [ ] Write game::Game
