@@ -31,10 +31,12 @@ pub trait BoardDefaults<MyPiece: Piece<MyPiece>> {
         */
         let board = todo!();
         // Put the amount of rows in height and the amount of columns in width
+        /*
         Board {
             board,
-            width: todo!(),
-            height: todo!(),
+            width: 4,
+            height: 3,
         }
+        */
     }
 }
