@@ -92,10 +92,14 @@ impl<MyPiece: Piece<MyPiece>> Board<MyPiece> {
         }
     }
 
-    fn get(&self, x_pos: usize, y_pos: usize) -> Option<MyPiece> {
-        Some(self.board.get(y_pos)?.get(x_pos)?.clone())
+    pub fn get(&self, x_pos: usize, y_pos: usize) -> Option<MyPiece> {
+        Some(self.board.get(y_pos + 1)?.get(x_pos + 1)?.clone())
     }
-    fn get_mut(board: &mut Vec<Vec<MyPiece>>, x_pos: usize, y_pos: usize) -> Option<&mut MyPiece> {
+    pub fn get_mut(
+        board: &mut Vec<Vec<MyPiece>>,
+        x_pos: usize,
+        y_pos: usize,
+    ) -> Option<&mut MyPiece> {
         board.get_mut(y_pos + 1)?.get_mut(x_pos + 1)
     }
 
@@ -178,48 +182,18 @@ impl<MyPiece: Piece<MyPiece>> Board<MyPiece> {
     ))
     ``` */
     pub fn move_piece(
-        mut self,
+        &mut self,
         old_pos: (usize, usize),
         new_pos: (usize, usize),
     ) -> Result<Self, OutOfBoundsError> {
-        // if let Some(mut old_square) = self.get_mut(old_pos.0, old_pos.1) {
-        //     if let Some(mut new_square) = self.get_mut(new_pos.0, new_pos.1) {
-        //         new_square = old_square;
-        //         old_square = &mut Piece::NONE;
-        //         Ok(self)
-        //     } else {
-        //         Err(OutOfBoundsError::new(
-        //             (new_pos.0, new_pos.1),
-        //             (self.width, self.height),
-        //         ))
-        //     }
-        // } else {
-        //     Err(OutOfBoundsError::new(
-        //         (old_pos.0, old_pos.1),
-        //         (self.width, self.height),
-        //     ))
-        // }
-        /*
-        let width: usize = self.width;
-        let height: usize = self.height;
-
-        // Get the piece at the old position.
-        let mut old_square = self.get(old_pos.0, old_pos.1).ok_or(OutOfBoundsError::new(
-            (old_pos.0, old_pos.1),
-            (width, height),
-        ))?;
-
-        let mut new_square = &mut self.board[old_pos.1][old_pos.0];
-        //.get_mut(new_pos.0, new_pos.1)
-        //.ok_or(OutOfBoundsError::new(
-        //    (old_pos.0, old_pos.1),
-        //    (width, height),
-        //))?;
-
-        new_square.set(old_square);
-        */
-        //self = self.put_piece(piece, pos)
-        Ok(self)
+        self.put_piece(
+            self.get(old_pos.0, old_pos.1).ok_or(OutOfBoundsError::new(
+                (old_pos.0, old_pos.1),
+                (self.width, self.height),
+            ))?,
+            new_pos,
+        );
+        todo!()
     }
 }
 impl<MyPiece: Piece<MyPiece>> fmt::Display for Board<MyPiece> {
