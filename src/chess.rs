@@ -27,10 +27,13 @@ pub enum ChessPieceTeam {
 }
 
 #[derive(Debug, Clone, Copy)]
-pub struct ChessPiece(ChessPieceTeam);
+pub struct ChessPiece(pub ChessPieceTeam);
 
 impl Piece<ChessPiece> for ChessPiece {
     const NONE: ChessPiece = ChessPiece(ChessPieceTeam::None);
+    fn set(&mut self, value: ChessPiece) {
+        *self = value;
+    }
 }
 
 impl TryFrom<char> for ChessPiece {
@@ -78,12 +81,64 @@ impl Into<char> for ChessPiece {
 
 impl BoardDefaults<ChessPiece> for ChessPiece {
     fn empty_board(width: usize, height: usize) -> Board<ChessPiece> {
-        let thegrid: Vec<Vec<ChessPiece>> = vec![vec![ChessPiece::NONE; width]; height]; // row oriented
+        // Replace MyPiece with the actual piece.
+        let board: Vec<Vec<ChessPiece>> = vec![vec![ChessPiece::NONE; width]; height]; // row oriented
 
         Board {
-            board: thegrid,
+            board,
             width,
             height,
+        }
+    }
+
+    fn default_board() -> Board<ChessPiece> {
+        /*
+        Type aliases, for example:
+        type MP = MyPiece;
+        type MPT = MyPieceTeam
+        type MPTy = MyPieceType
+        type XX = MP(MPT::None);
+        type WP = MP(MPT::White(MPTy::Pawn))
+        */
+
+        const XX: ChessPiece = ChessPiece(ChessPieceTeam::None);
+        const WK: ChessPiece = ChessPiece(ChessPieceTeam::White(ChessPieceType::King));
+        const WQ: ChessPiece = ChessPiece(ChessPieceTeam::White(ChessPieceType::Queen));
+        const WR: ChessPiece = ChessPiece(ChessPieceTeam::White(ChessPieceType::Rook));
+        const WB: ChessPiece = ChessPiece(ChessPieceTeam::White(ChessPieceType::Bishop));
+        const WN: ChessPiece = ChessPiece(ChessPieceTeam::White(ChessPieceType::Knight));
+        const WP: ChessPiece = ChessPiece(ChessPieceTeam::White(ChessPieceType::Pawn));
+        const BK: ChessPiece = ChessPiece(ChessPieceTeam::Black(ChessPieceType::King));
+        const BQ: ChessPiece = ChessPiece(ChessPieceTeam::Black(ChessPieceType::Queen));
+        const BR: ChessPiece = ChessPiece(ChessPieceTeam::Black(ChessPieceType::Rook));
+        const BB: ChessPiece = ChessPiece(ChessPieceTeam::Black(ChessPieceType::Bishop));
+        const BN: ChessPiece = ChessPiece(ChessPieceTeam::Black(ChessPieceType::Knight));
+        const BP: ChessPiece = ChessPiece(ChessPieceTeam::Black(ChessPieceType::Pawn));
+
+        /*
+        Your board, for example:
+        [
+        [XX,XX,XX,XX],
+        [XX,XX,XX,XX],
+        [WP,WP,WP,WP],
+        ]
+        */
+        let board = vec![
+            vec![BR, BN, BB, BQ, BK, BB, BN, BR],
+            vec![BP, BP, BP, BP, BP, BP, BP, BP],
+            vec![XX, XX, XX, XX, XX, XX, XX, XX],
+            vec![XX, XX, XX, XX, XX, XX, XX, XX],
+            vec![XX, XX, XX, XX, XX, XX, XX, XX],
+            vec![XX, XX, XX, XX, XX, XX, XX, XX],
+            vec![WP, WP, WP, WP, WP, WP, WP, WP],
+            vec![WR, WN, WB, WQ, WK, WB, WN, WR],
+        ];
+        // Put the amount of rows in height and the amount of columns in width
+
+        Board {
+            board,
+            width: 4,
+            height: 3,
         }
     }
 }

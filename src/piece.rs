@@ -10,6 +10,9 @@ pub trait Piece<MyPiece>:
     // fn get(self) -> MyPiece;
     // fn get_mut(&mut self) -> &mut MyPiece;
     // fn is_none(&self) -> bool;
+    fn set(&mut self, value: MyPiece) {
+        //*self = value;
+    }
 }
 
 /// Error for when [Piece::try_from] gets an invalid [char].

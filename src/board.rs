@@ -92,11 +92,11 @@ impl<MyPiece: Piece<MyPiece>> Board<MyPiece> {
         }
     }
 
-    pub fn get(&self, x_pos: usize, y_pos: usize) -> Option<MyPiece> {
+    fn get(&self, x_pos: usize, y_pos: usize) -> Option<MyPiece> {
         Some(self.board.get(y_pos)?.get(x_pos)?.clone())
     }
-    pub fn get_mut(&mut self, x_pos: usize, y_pos: usize) -> Option<&mut MyPiece> {
-        self.board.get_mut(y_pos)?.get_mut(x_pos)
+    fn get_mut(board: &mut Vec<Vec<MyPiece>>, x_pos: usize, y_pos: usize) -> Option<&mut MyPiece> {
+        board.get_mut(y_pos + 1)?.get_mut(x_pos + 1)
     }
 
     /// Returns [self] with a [Piece] at board[y_pos][x_pos]
@@ -130,7 +130,7 @@ impl<MyPiece: Piece<MyPiece>> Board<MyPiece> {
         //         (self.width, self.height),
         //     )),
         // }
-
+        /*
         let width: usize = self.width;
         let height: usize = self.height;
 
@@ -138,6 +138,15 @@ impl<MyPiece: Piece<MyPiece>> Board<MyPiece> {
             .get_mut(pos.0, pos.1)
             .ok_or(OutOfBoundsError::new((pos.0, pos.1), (width, height)))?;
         square = &mut piece.clone();
+        */
+        println!("{self}");
+        Self::get_mut(&mut self.board, pos.0, pos.1)
+            .ok_or(OutOfBoundsError::new(
+                (pos.0, pos.1),
+                (self.width.clone(), self.height.clone()),
+            ))?
+            .set(piece);
+        println!("{self}");
         Ok(self)
     }
 
@@ -169,10 +178,10 @@ impl<MyPiece: Piece<MyPiece>> Board<MyPiece> {
     ))
     ``` */
     pub fn move_piece(
-        &mut self,
+        mut self,
         old_pos: (usize, usize),
         new_pos: (usize, usize),
-    ) -> Result<&mut Self, OutOfBoundsError> {
+    ) -> Result<Self, OutOfBoundsError> {
         // if let Some(mut old_square) = self.get_mut(old_pos.0, old_pos.1) {
         //     if let Some(mut new_square) = self.get_mut(new_pos.0, new_pos.1) {
         //         new_square = old_square;
@@ -190,25 +199,26 @@ impl<MyPiece: Piece<MyPiece>> Board<MyPiece> {
         //         (self.width, self.height),
         //     ))
         // }
-
+        /*
         let width: usize = self.width;
         let height: usize = self.height;
 
         // Get the piece at the old position.
-        // Clone it because there can not be two mutable references.
         let mut old_square = self.get(old_pos.0, old_pos.1).ok_or(OutOfBoundsError::new(
             (old_pos.0, old_pos.1),
             (width, height),
         ))?;
 
-        let mut new_square = self
-            .get_mut(old_pos.0, old_pos.1)
-            .ok_or(OutOfBoundsError::new(
-                (old_pos.0, old_pos.1),
-                (width, height),
-            ))?;
+        let mut new_square = &mut self.board[old_pos.1][old_pos.0];
+        //.get_mut(new_pos.0, new_pos.1)
+        //.ok_or(OutOfBoundsError::new(
+        //    (old_pos.0, old_pos.1),
+        //    (width, height),
+        //))?;
 
-        new_square = &mut old_square;
+        new_square.set(old_square);
+        */
+        //self = self.put_piece(piece, pos)
         Ok(self)
     }
 }
