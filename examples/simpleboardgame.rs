@@ -1,3 +1,5 @@
+use std::io;
+
 use easychess_lib::{
     self,
     board::Board,
@@ -8,6 +10,7 @@ fn main() {
     let mut board = ChessPiece::default_board();
     loop {
         println!("{board}");
-        println!("")
+        println!("Put in the coordinates of the piece and where you want it to go. e.g. '4,5 5,4'");
+        let mut x: String;
     }
 }
