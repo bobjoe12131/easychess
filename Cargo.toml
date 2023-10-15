@@ -1,8 +1,8 @@
 [package]
 name = "easychess-lib"
-version = "0.2.0"
+version = "0.3.0"
 edition = "2021"
-description = "A library to easily create a chess game."
+description = "A library to easily create a chess game. Really WIP."
 license = "GPL-3.0-only"
 readme = "README.md"
 keywords = ["chess", "board", "game", "library"]
