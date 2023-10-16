@@ -191,10 +191,10 @@ impl<MyPiece: Piece<MyPiece>> Board<MyPiece> {
         &mut self,
         old_pos: (usize, usize),
         new_pos: (usize, usize),
-    ) -> Result<Self, OutOfBoundsError> {
+    ) -> Result<&mut Self, OutOfBoundsError> {
         self.put_piece(self.get(old_pos.0, old_pos.1)?, new_pos);
         self.put_piece(MyPiece::NONE, old_pos);
-        todo!()
+        Ok(self)
     }
 }
 impl<MyPiece: Piece<MyPiece>> fmt::Display for Board<MyPiece> {
