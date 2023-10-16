@@ -92,8 +92,14 @@ impl<MyPiece: Piece<MyPiece>> Board<MyPiece> {
         }
     }
 
-    pub fn get(&self, x_pos: usize, y_pos: usize) -> Option<MyPiece> {
-        Some(self.board.get(y_pos + 1)?.get(x_pos + 1)?.clone())
+    pub fn get(&self, x_pos: usize, y_pos: usize) -> Result<MyPiece, OutOfBoundsError> {
+        (|| Some(*self.board.get(y_pos + 1)?.get(x_pos + 1)?))()
+            .clone()
+            .ok_or(OutOfBoundsError::new(
+                (x_pos, y_pos),
+                (self.width, self.height),
+            )) //;
+               //todo!()
     }
     pub fn get_mut(
         board: &mut Vec<Vec<MyPiece>>,
@@ -186,13 +192,8 @@ impl<MyPiece: Piece<MyPiece>> Board<MyPiece> {
         old_pos: (usize, usize),
         new_pos: (usize, usize),
     ) -> Result<Self, OutOfBoundsError> {
-        self.put_piece(
-            self.get(old_pos.0, old_pos.1).ok_or(OutOfBoundsError::new(
-                (old_pos.0, old_pos.1),
-                (self.width, self.height),
-            ))?,
-            new_pos,
-        );
+        self.put_piece(self.get(old_pos.0, old_pos.1)?, new_pos);
+        self.put_piece(MyPiece::NONE, old_pos);
         todo!()
     }
 }
