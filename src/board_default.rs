@@ -1,6 +1,6 @@
 use crate::{board::Board, piece::Piece};
 
-pub trait BoardDefaults<MyPiece: Piece<MyPiece>> {
+pub trait BoardDefaults<MyPiece> {
     fn empty_board(width: usize, height: usize) -> Board<MyPiece> {
         // Replace MyPiece with the actual piece.
         let board: Vec<Vec<MyPiece>> = vec![vec![MyPiece::NONE; width]; height]; // row oriented

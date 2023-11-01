@@ -7,7 +7,6 @@
 //};
 
 use crate::board::Board;
-use crate::board_default::BoardDefaults;
 use crate::piece::{Piece, PieceTryFromError};
 
 #[derive(Debug, Clone, Copy)]
@@ -29,57 +28,12 @@ pub enum ChessPieceTeam {
 #[derive(Debug, Clone, Copy)]
 pub struct ChessPiece(pub ChessPieceTeam);
 
-impl Piece<ChessPiece> for ChessPiece {
+impl ChessPiece {
     const NONE: ChessPiece = ChessPiece(ChessPieceTeam::None);
     fn set(&mut self, value: ChessPiece) {
         *self = value;
     }
-}
 
-impl TryFrom<char> for ChessPiece {
-    type Error = PieceTryFromError;
-
-    fn try_from(value: char) -> Result<Self, Self::Error> {
-        let piece_type = match value.to_ascii_lowercase() {
-            '.' => return Ok(Self(ChessPieceTeam::None)),
-            'k' => ChessPieceType::King,
-            'q' => ChessPieceType::Queen,
-            'r' => ChessPieceType::Rook,
-            'b' => ChessPieceType::Bishop,
-            'n' => ChessPieceType::Knight,
-            'p' => ChessPieceType::Pawn,
-            //' ' | '.' => PieceType::None,
-            c => return Err(PieceTryFromError(c)),
-        };
-        let pteam = match value.is_ascii_uppercase() {
-            true => ChessPieceTeam::White(piece_type),
-            false => ChessPieceTeam::Black(piece_type),
-        };
-        Ok(Self(pteam))
-    }
-}
-
-impl Into<char> for ChessPiece {
-    fn into(self) -> char {
-        let matched_char = match self.0 {
-            ChessPieceTeam::None => return '.',
-            ChessPieceTeam::White(ptype) | ChessPieceTeam::Black(ptype) => match ptype {
-                ChessPieceType::King => 'k',
-                ChessPieceType::Queen => 'q',
-                ChessPieceType::Rook => 'r',
-                ChessPieceType::Bishop => 'b',
-                ChessPieceType::Knight => 'n',
-                ChessPieceType::Pawn => 'p',
-            },
-        };
-        match self.0 {
-            ChessPieceTeam::White(_) => matched_char.to_ascii_uppercase(),
-            _ => matched_char,
-        }
-    }
-}
-
-impl BoardDefaults<ChessPiece> for ChessPiece {
     fn empty_board(width: usize, height: usize) -> Board<ChessPiece> {
         // Replace MyPiece with the actual piece.
         let board: Vec<Vec<ChessPiece>> = vec![vec![ChessPiece::NONE; width]; height]; // row oriented
@@ -139,6 +93,49 @@ impl BoardDefaults<ChessPiece> for ChessPiece {
             board,
             width: 4,
             height: 3,
+        }
+    }
+}
+
+impl TryFrom<char> for ChessPiece {
+    type Error = PieceTryFromError;
+
+    fn try_from(value: char) -> Result<Self, Self::Error> {
+        let piece_type = match value.to_ascii_lowercase() {
+            '.' => return Ok(Self(ChessPieceTeam::None)),
+            'k' => ChessPieceType::King,
+            'q' => ChessPieceType::Queen,
+            'r' => ChessPieceType::Rook,
+            'b' => ChessPieceType::Bishop,
+            'n' => ChessPieceType::Knight,
+            'p' => ChessPieceType::Pawn,
+            //' ' | '.' => PieceType::None,
+            c => return Err(PieceTryFromError(c)),
+        };
+        let pteam = match value.is_ascii_uppercase() {
+            true => ChessPieceTeam::White(piece_type),
+            false => ChessPieceTeam::Black(piece_type),
+        };
+        Ok(Self(pteam))
+    }
+}
+
+impl Into<char> for ChessPiece {
+    fn into(self) -> char {
+        let matched_char = match self.0 {
+            ChessPieceTeam::None => return '.',
+            ChessPieceTeam::White(ptype) | ChessPieceTeam::Black(ptype) => match ptype {
+                ChessPieceType::King => 'k',
+                ChessPieceType::Queen => 'q',
+                ChessPieceType::Rook => 'r',
+                ChessPieceType::Bishop => 'b',
+                ChessPieceType::Knight => 'n',
+                ChessPieceType::Pawn => 'p',
+            },
+        };
+        match self.0 {
+            ChessPieceTeam::White(_) => matched_char.to_ascii_uppercase(),
+            _ => matched_char,
         }
     }
 }
