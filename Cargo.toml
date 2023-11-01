@@ -1,14 +1,14 @@
 [package]
-name = "easychess-lib"
-version = "0.3.0"
+name = "easychess"
+version = "0.0.1"
 edition = "2021"
-description = "A library to easily create a chess game. Really WIP."
+description = "A library to easily create a chess game. Work in progress."
 license = "GPL-3.0-only"
 readme = "README.md"
 keywords = ["chess", "board", "game", "library"]
 categories = ["games", "game-engines"]
 exclude = ["update-docs.sh"]
-repository = "https://github.com/bobjoe12131/easychess-lib"
+repository = "https://github.com/bobjoe12131/easychess"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
