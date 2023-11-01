@@ -83,10 +83,10 @@ impl<MyPiece: Piece<MyPiece>> Board<MyPiece> {
     /// let empty_board = Board::new(8,8);
     /// ```
     pub fn new(width: usize, height: usize) -> Self {
-        let thegrid: Vec<Vec<MyPiece>> = vec![vec![MyPiece::NONE; width]; height]; // row oriented
+        let board: Vec<Vec<MyPiece>> = vec![vec![MyPiece::NONE; width]; height]; // row oriented
 
         Board {
-            board: thegrid,
+            board,
             width,
             height,
         }
