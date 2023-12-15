@@ -6,8 +6,13 @@ use std::{
     fmt::{self, Display},
 };
 
+pub struct V2 {
+    x: usize,
+    y: usize,
+}
+
 // use crate::chess::ChessPiece;
-use crate::piece::{Piece, PieceTryFromError};
+use crate::chess::{ChessPiece, PieceTryFromError};
 
 /// Error for when a [Piece] is put or moved outside of the [Board] size.
 ///
@@ -62,12 +67,12 @@ impl Display for OutOfBoundsError {
 ///
 /// Board coordinates go right and down.
 #[derive(Clone)]
-pub struct Board<MyPiece: Piece<MyPiece>> {
-    pub board: Vec<Vec<MyPiece>>,
+pub struct Board {
+    pub board: Vec<Vec<ChessPiece>>,
     pub width: usize,
     pub height: usize,
 }
-impl<MyPiece: Piece<MyPiece>> Board<MyPiece> {
+impl Board {
     /// Returns an empty [Board]. Every element is [Piece::NONE]
     ///
     /// # Arguments
@@ -83,7 +88,7 @@ impl<MyPiece: Piece<MyPiece>> Board<MyPiece> {
     /// let empty_board = Board::new(8,8);
     /// ```
     pub fn new(width: usize, height: usize) -> Self {
-        let board: Vec<Vec<MyPiece>> = vec![vec![MyPiece::NONE; width]; height]; // row oriented
+        let board: Vec<Vec<ChessPiece>> = vec![vec![ChessPiece::NONE; width]; height]; // row oriented
 
         Board {
             board,
@@ -92,21 +97,17 @@ impl<MyPiece: Piece<MyPiece>> Board<MyPiece> {
         }
     }
 
-    pub fn get(&self, x_pos: usize, y_pos: usize) -> Result<MyPiece, OutOfBoundsError> {
+    pub fn get(&self, x_pos: usize, y_pos: usize) -> Result<ChessPiece, OutOfBoundsError> {
         (|| Some(*self.board.get(y_pos + 1)?.get(x_pos + 1)?))()
             .clone()
             .ok_or(OutOfBoundsError::new(
                 (x_pos, y_pos),
                 (self.width, self.height),
-            )) //;
-               //todo!()
+            ))
     }
-    pub fn get_mut(
-        board: &mut Vec<Vec<MyPiece>>,
-        x_pos: usize,
-        y_pos: usize,
-    ) -> Option<&mut MyPiece> {
-        board.get_mut(y_pos + 1)?.get_mut(x_pos + 1)
+
+    pub fn get_mut(board: &mut Self, x_pos: usize, y_pos: usize) -> Option<&mut ChessPiece> {
+        board.board.get_mut(y_pos + 1)?.get_mut(x_pos + 1)
     }
 
     /// Returns [self] with a [Piece] at board[y_pos][x_pos]
@@ -125,7 +126,7 @@ impl<MyPiece: Piece<MyPiece>> Board<MyPiece> {
     /// ```
     pub fn put_piece(
         &mut self,
-        piece: MyPiece,
+        piece: ChessPiece,
         pos: (usize, usize),
     ) -> Result<&mut Self, OutOfBoundsError> {
         //let mut new_board = self;

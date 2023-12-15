@@ -33,7 +33,7 @@
 pub mod board;
 //pub mod board_default;
 pub mod chess;
-pub mod piece;
+//pub mod piece;
 
 #[cfg(test)]
 mod tests {

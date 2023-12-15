@@ -6,8 +6,10 @@
 //    fmt::{Debug, Display},
 //};
 
+use std::{error::Error, fmt::Display};
+
 use crate::board::Board;
-use crate::piece::{Piece, PieceTryFromError};
+//use crate::piece::{Piece, PieceTryFromError};
 
 #[derive(Debug, Clone, Copy)]
 pub enum ChessPieceType {
@@ -29,12 +31,12 @@ pub enum ChessPieceTeam {
 pub struct ChessPiece(pub ChessPieceTeam);
 
 impl ChessPiece {
-    const NONE: ChessPiece = ChessPiece(ChessPieceTeam::None);
-    fn set(&mut self, value: ChessPiece) {
+    pub const NONE: ChessPiece = ChessPiece(ChessPieceTeam::None);
+    pub fn set(&mut self, value: ChessPiece) {
         *self = value;
     }
 
-    fn empty_board(width: usize, height: usize) -> Board<ChessPiece> {
+    pub fn empty_board(width: usize, height: usize) -> Board<ChessPiece> {
         // Replace MyPiece with the actual piece.
         let board: Vec<Vec<ChessPiece>> = vec![vec![ChessPiece::NONE; width]; height]; // row oriented
 
@@ -45,16 +47,8 @@ impl ChessPiece {
         }
     }
 
-    fn default_board() -> Board<ChessPiece> {
-        /*
-        Type aliases, for example:
-        type MP = MyPiece;
-        type MPT = MyPieceTeam
-        type MPTy = MyPieceType
-        type XX = MP(MPT::None);
-        type WP = MP(MPT::White(MPTy::Pawn))
-        */
-
+    pub fn default_board() -> Board<ChessPiece> {
+        use ChessPiece as CP;
         const XX: ChessPiece = ChessPiece(ChessPieceTeam::None);
         const WK: ChessPiece = ChessPiece(ChessPieceTeam::White(ChessPieceType::King));
         const WQ: ChessPiece = ChessPiece(ChessPieceTeam::White(ChessPieceType::Queen));
@@ -137,6 +131,33 @@ impl Into<char> for ChessPiece {
             ChessPieceTeam::White(_) => matched_char.to_ascii_uppercase(),
             _ => matched_char,
         }
+    }
+}
+
+#[derive(Debug)]
+pub struct PieceTryFromError(pub char);
+
+impl Error for PieceTryFromError {
+    fn source(&self) -> Option<&(dyn Error + 'static)> {
+        None
+    }
+
+    fn description(&self) -> &str {
+        "description() is deprecated; use Display"
+    }
+
+    fn cause(&self) -> Option<&dyn Error> {
+        self.source()
+    }
+}
+
+impl Display for PieceTryFromError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "No char to Piece match: A char, '{}', tried to be matched to a Piece, but there is no pattern.",
+            self.0
+        )
     }
 }
 
