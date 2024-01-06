@@ -1,61 +1,30 @@
 #![warn(missing_docs)]
 #![warn(rustdoc::missing_doc_code_examples)]
-
-use std::{
-    error::Error,
-    fmt::{self, Display},
-};
-
-pub struct V2 {
+use crate::chess::{ChessPiece, PieceTryFromError};
+use std::fmt;
+#[derive(Clone, Copy, Debug)]
+pub struct Pos {
     x: usize,
     y: usize,
 }
-
-// use crate::chess::ChessPiece;
-use crate::chess::{ChessPiece, PieceTryFromError};
-
-/// Error for when a [Piece] is put or moved outside of the [Board] size.
-///
-/// # Fields
-/// * piece_pos: (usize, usize) - (x,y) Where the [Piece] tried to be placed.
-/// * board_size: (usize, usize) - (w,h) The size of the [Board].
-#[derive(Debug)]
-pub struct OutOfBoundsError {
-    piece_pos: (usize, usize),
-    board_size: (usize, usize),
-}
-impl OutOfBoundsError {
-    pub fn new(piece_pos: (usize, usize), board_size: (usize, usize)) -> Self {
-        OutOfBoundsError {
-            piece_pos,
-            board_size,
-        }
+impl Pos {
+    pub fn new(x: usize, y: usize, width: usize, height: usize) -> Option<Pos> {
+        ((1..=width).contains(&x) && (1..=height).contains(&y)).then_some(Pos { x, y })
     }
-}
-type OBE = OutOfBoundsError;
-impl Error for OutOfBoundsError {
-    fn source(&self) -> Option<&(dyn Error + 'static)> {
-        None
+    fn x(self) -> usize {
+        self.x
     }
-
-    fn description(&self) -> &str {
-        "description() is deprecated; use Display"
-    }
-
-    fn cause(&self) -> Option<&dyn Error> {
-        self.source()
+    fn y(self) -> usize {
+        self.y
     }
 }
 
-impl Display for OutOfBoundsError {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(
-            f,
-            "Piece is out of bounds: A Piece tried to be at ({},{}) on a Board, but the Board's size is only ({},{}).",
-            self.piece_pos.0, self.piece_pos.1, self.board_size.0, self.board_size.0,
-        )
-    }
-}
+// impl TryFrom<(u8, u8)> for Pos {
+//     type Error = ();
+//     fn try_from(value: (u8, u8)) -> Self {
+//         Self::new(value.0, value.1)
+//     }
+// }
 
 /// Row oriented.
 /// Visually look like this:
@@ -65,7 +34,7 @@ impl Display for OutOfBoundsError {
 /// - {-----}
 /// - }
 ///
-/// Board coordinates go right and down.
+/// Board coordinates go down and right.
 #[derive(Clone)]
 pub struct Board {
     pub board: Vec<Vec<ChessPiece>>,
@@ -97,17 +66,12 @@ impl Board {
         }
     }
 
-    pub fn get(&self, x_pos: usize, y_pos: usize) -> Result<ChessPiece, OutOfBoundsError> {
-        (|| Some(*self.board.get(y_pos + 1)?.get(x_pos + 1)?))()
-            .clone()
-            .ok_or(OutOfBoundsError::new(
-                (x_pos, y_pos),
-                (self.width, self.height),
-            ))
+    pub fn get(self, pos: Pos) -> ChessPiece {
+        self.board[pos.y() - 1][pos.x() - 1]
     }
 
-    pub fn get_mut(board: &mut Self, x_pos: usize, y_pos: usize) -> Option<&mut ChessPiece> {
-        board.board.get_mut(y_pos + 1)?.get_mut(x_pos + 1)
+    pub fn get_mut(&mut self, pos: Pos) -> &mut ChessPiece {
+        &mut self.board[pos.y() - 1][pos.x() - 1]
     }
 
     /// Returns [self] with a [Piece] at board[y_pos][x_pos]
@@ -124,11 +88,7 @@ impl Board {
     ///
     /// let empty_board = Board::new(8,8);
     /// ```
-    pub fn put_piece(
-        &mut self,
-        piece: ChessPiece,
-        pos: (usize, usize),
-    ) -> Result<&mut Self, OutOfBoundsError> {
+    pub fn put_piece(&mut self, piece: &ChessPiece, pos: Pos) -> &mut Self {
         //let mut new_board = self;
 
         // match self.get_mut(x_pos, y_pos) {
@@ -151,14 +111,11 @@ impl Board {
         square = &mut piece.clone();
         */
         println!("{self}");
-        Self::get_mut(&mut self.board, pos.0, pos.1)
-            .ok_or(OutOfBoundsError::new(
-                (pos.0, pos.1),
-                (self.width.clone(), self.height.clone()),
-            ))?
-            .set(piece);
+        let temp = self.get_mut(pos);
+        let temp2 = piece;
+        *temp = *temp2;
         println!("{self}");
-        Ok(self)
+        self
     }
 
     /// Moves the piece at the old position to the new position.
@@ -188,17 +145,22 @@ impl Board {
         (self.width, self.height),
     ))
     ``` */
-    pub fn move_piece(
-        &mut self,
-        old_pos: (usize, usize),
-        new_pos: (usize, usize),
-    ) -> Result<&mut Self, OutOfBoundsError> {
-        self.put_piece(self.get(old_pos.0, old_pos.1)?, new_pos);
-        self.put_piece(MyPiece::NONE, old_pos);
-        Ok(self)
+    pub fn move_piece(&mut self, old_pos: Pos, new_pos: Pos) -> &mut Self {
+        {
+            // set new square piece to old square piece
+            let old_square = self.clone().get(old_pos);
+            let new_square = self.get_mut(new_pos);
+            *new_square = old_square;
+        }
+        let old_square = self.get_mut(old_pos);
+        *old_square = ChessPiece::NONE;
+        self
+    }
+    pub fn pos(&self, x: usize, y: usize) -> Option<Pos> {
+        Pos::new(x, y, self.width, self.height)
     }
 }
-impl<MyPiece: Piece<MyPiece>> fmt::Display for Board<MyPiece> {
+impl fmt::Display for Board {
     /// Allow [Board] to be displayed to stdout with macros such as [`println!()`].
     ///
     /// # Examples
@@ -259,7 +221,8 @@ impl<MyPiece: Piece<MyPiece>> fmt::Display for Board<MyPiece> {
         write!(f, "{board}")
     }
 }
-impl<MyPiece: Piece<MyPiece>> TryFrom<&str> for Board<MyPiece> {
+//impl<MyPiece: Piece<MyPiece>> TryFrom<&str> for Board<MyPiece> {
+impl TryFrom<&str> for Board {
     type Error = PieceTryFromError;
     /// Parses a [String] into a [Board].
     /// Matches each [char] in [str] with [Piece::try_from].
@@ -290,14 +253,14 @@ impl<MyPiece: Piece<MyPiece>> TryFrom<&str> for Board<MyPiece> {
     /// RNBQKBNR";
     /// ```
     fn try_from(value: &str) -> Result<Self, Self::Error> {
-        let parseboard: Vec<Vec<MyPiece>> = value
+        let parseboard: Vec<Vec<ChessPiece>> = value
             .lines()
             .map(|line| {
                 line.chars()
                     .map(|character| character.try_into())
-                    .collect::<Result<Vec<MyPiece>, Self::Error>>()
+                    .collect::<Result<Vec<ChessPiece>, Self::Error>>()
             })
-            .collect::<Result<Vec<Vec<MyPiece>>, Self::Error>>()?;
+            .collect::<Result<Vec<Vec<ChessPiece>>, Self::Error>>()?;
         Ok(Self {
             board: parseboard.clone(),
             width: parseboard[0].len().clone(),
